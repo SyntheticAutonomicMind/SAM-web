@@ -1,0 +1,346 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* SPDX-FileCopyrightText: Copyright (c) 2026 Andrew Wyatt (Fewtarius) */
+
+/**
+ * Chat Toolbar Styles
+ * Two-row toolbar matching native SAM ChatWidget toolbar
+ * Located above input area (at bottom of chat)
+ * Row 1: Model, System Prompt, Personality selectors | Parameters toggle button
+ * Row 2: Advanced Parameters (collapsible)
+ */
+
+/* ============================================
+   TOOLBAR CONTAINER
+   ============================================ */
+
+.chat-toolbar {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+}
+
+/* ============================================
+   ROW 1: MAIN TOOLBAR
+   ============================================ */
+
+.toolbar-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px;
+    flex-wrap: wrap;
+}
+
+.toolbar-main .toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.toolbar-main .toolbar-group label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.toolbar-main .toolbar-group select {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.toolbar-main .toolbar-group select:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border-light);
+}
+
+.toolbar-main .toolbar-group select:focus {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 2px rgba(91, 155, 213, 0.2);
+}
+
+/* Spacer to push toggle button to the right */
+.toolbar-spacer {
+    flex: 1;
+}
+
+/* Parameters toggle button */
+.toolbar-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 28px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.toolbar-toggle-btn:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+}
+
+.toolbar-toggle-btn.active {
+    background: var(--brand-primary);
+    color: white;
+    border-color: var(--brand-primary);
+}
+
+.toolbar-toggle-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ============================================
+   ROW 2: ADVANCED PARAMETERS (COLLAPSIBLE)
+   ============================================ */
+
+.advanced-parameters-toolbar {
+    display: none; /* Hidden by default */
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+/* Parameter groups */
+.parameter-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.parameter-group label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* Sliders */
+.parameter-slider {
+    width: 60px;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    outline: none;
+    cursor: pointer;
+}
+
+.parameter-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--brand-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.parameter-slider::-webkit-slider-thumb:hover {
+    background: var(--brand-secondary);
+    transform: scale(1.1);
+}
+
+.parameter-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: var(--brand-primary);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.parameter-slider::-moz-range-thumb:hover {
+    background: var(--brand-secondary);
+    transform: scale(1.1);
+}
+
+/* Numeric displays */
+.parameter-value {
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    min-width: 30px;
+    text-align: right;
+}
+
+/* Repetition penalty add button */
+.rep-penalty-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.rep-penalty-add-btn:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+}
+
+.rep-penalty-add-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* Repetition penalty remove button */
+.rep-penalty-remove-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.rep-penalty-remove-btn:hover {
+    color: var(--error);
+}
+
+.rep-penalty-remove-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Divider */
+.parameter-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border-color);
+    margin: 0 4px;
+}
+
+/* Toggles/Checkboxes */
+.parameter-toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.parameter-toggle-group label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+}
+
+.parameter-toggle {
+    width: 36px;
+    height: 20px;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.parameter-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+    border: 1px solid var(--border-color);
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+    background: var(--text-secondary);
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+}
+
+.parameter-toggle input:checked + .toggle-slider {
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
+}
+
+.parameter-toggle input:checked + .toggle-slider:before {
+    background: white;
+    transform: translateX(16px);
+}
+
+.parameter-toggle:hover .toggle-slider {
+    border-color: var(--border-light);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .toolbar-main {
+        gap: 12px;
+        padding: 8px 12px;
+    }
+    
+    .advanced-parameters-toolbar {
+        gap: 8px;
+        padding: 8px 12px;
+    }
+    
+    .toolbar-main .toolbar-group select {
+        max-width: 140px;
+    }
+}
+
+@media (max-width: 480px) {
+    .toolbar-main {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .toolbar-main .toolbar-group {
+        width: 100%;
+    }
+    
+    .toolbar-main .toolbar-group select {
+        flex: 1;
+        max-width: none;
+    }
+    
+    .toolbar-spacer {
+        display: none;
+    }
+}

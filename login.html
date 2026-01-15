@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect to SAM</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: var(--space-lg);
+        }
+
+        .login-container {
+            max-width: 480px;
+            width: 100%;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .logo h1 {
+            font-size: var(--font-size-3xl);
+            background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-sm);
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .instructions {
+            background-color: var(--info-bg);
+            border-left: 4px solid var(--info);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+            font-size: var(--font-size-sm);
+        }
+
+        .instructions ol {
+            margin: var(--space-sm) 0 0 var(--space-lg);
+        }
+
+        .instructions li {
+            margin-bottom: var(--space-xs);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-md);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--space-xs);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .advanced-toggle {
+            margin-top: var(--space-lg);
+            padding-top: var(--space-lg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .advanced-settings {
+            margin-top: var(--space-md);
+            padding: var(--space-md);
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-md);
+        }
+
+        .status {
+            text-align: center;
+            margin-top: var(--space-lg);
+            font-size: var(--font-size-sm);
+            color: var(--text-tertiary);
+        }
+
+        .status.checking { color: var(--info); }
+        .status.success { color: var(--success); }
+        .status.error { color: var(--error); }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>SAM-Web</h1>
+            <p>Web Interface for Synthetic Autonomic Mind</p>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="instructions">
+                    <strong>First-time setup:</strong>
+                    <ol>
+                        <li>Open SAM Preferences → API Server</li>
+                        <li>Ensure "Enable API Server" is checked</li>
+                        <li>Copy your API token (click 📋)</li>
+                        <li>Paste the token below</li>
+                    </ol>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="apiToken">API Token</label>
+                        <input 
+                            type="password" 
+                            id="apiToken" 
+                            class="input" 
+                            placeholder="Paste your SAM API token here"
+                            autocomplete="off"
+                            required
+                        >
+                    </div>
+
+                    <button type="button" id="advancedToggle" class="btn btn-ghost btn-sm" style="width: 100%;">
+                        Advanced Settings ▼
+                    </button>
+
+                    <div id="advancedSettings" class="advanced-settings hidden">
+                        <div class="form-group">
+                            <label for="apiUrl">SAM API URL</label>
+                            <input 
+                                type="url" 
+                                id="apiUrl" 
+                                class="input" 
+                                value="http://localhost:8080"
+                                placeholder="http://localhost:8080"
+                            >
+                            <small style="color: var(--text-tertiary); font-size: var(--font-size-xs); display: block; margin-top: var(--space-xs);">
+                                Only change this if SAM is running on a different machine or port
+                            </small>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="connectBtn" class="btn btn-primary" style="width: 100%; margin-top: var(--space-lg);">
+                        Connect to SAM
+                    </button>
+                </form>
+
+                <div id="status" class="status"></div>
+            </div>
+        </div>
+
+        <p style="text-align: center; margin-top: var(--space-xl); color: var(--text-tertiary); font-size: var(--font-size-xs);">
+            SAM-Web v1.0.0 &nbsp;•&nbsp; <a href="https://github.com/fewtarius/SAM" target="_blank">GitHub</a>
+        </p>
+    </div>
+
+    <script src="js/utils/toast.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        const form = document.getElementById('loginForm');
+        const tokenInput = document.getElementById('apiToken');
+        const urlInput = document.getElementById('apiUrl');
+        const connectBtn = document.getElementById('connectBtn');
+        const statusEl = document.getElementById('status');
+        const advancedToggle = document.getElementById('advancedToggle');
+        const advancedSettings = document.getElementById('advancedSettings');
+
+        // Advanced settings toggle
+        advancedToggle.addEventListener('click', () => {
+            advancedSettings.classList.toggle('hidden');
+            advancedToggle.textContent = advancedSettings.classList.contains('hidden') 
+                ? 'Advanced Settings ▼' 
+                : 'Advanced Settings ▲';
+        });
+
+        // Check if already authenticated
+        window.addEventListener('DOMContentLoaded', () => {
+            if (API.isAuthenticated()) {
+                // Already have token, try to verify it
+                statusEl.textContent = 'Verifying existing session...';
+                statusEl.className = 'status checking';
+                
+                API.health()
+                    .then(() => {
+                        statusEl.textContent = '✓ Connected! Redirecting...';
+                        statusEl.className = 'status success';
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 500);
+                    })
+                    .catch(() => {
+                        statusEl.textContent = 'Session expired. Please log in again.';
+                        statusEl.className = 'status error';
+                        // Clear invalid token
+                        localStorage.removeItem('sam-api-token');
+                        API.token = null;
+                    });
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const token = tokenInput.value.trim();
+            const apiUrl = urlInput.value.trim();
+
+            if (!token) {
+                Toast.error('Please enter your API token');
+                return;
+            }
+
+            // Disable form during authentication
+            connectBtn.disabled = true;
+            connectBtn.innerHTML = '<span class="spinner"></span> Connecting...';
+            statusEl.textContent = 'Connecting to SAM...';
+            statusEl.className = 'status checking';
+
+            try {
+                // Set API credentials
+                API.setToken(token);
+                API.setBaseURL(apiUrl);
+
+                // Test connection with health check
+                await API.health();
+
+                // Success!
+                statusEl.textContent = '✓ Connected successfully!';
+                statusEl.className = 'status success';
+                Toast.success('Connected to SAM');
+
+                // Redirect to chat interface
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+
+            } catch (error) {
+                // Authentication failed
+                statusEl.textContent = '✗ Connection failed: ' + error.message;
+                statusEl.className = 'status error';
+                Toast.error('Failed to connect: ' + error.message);
+
+                // Clear invalid credentials
+                localStorage.removeItem('sam-api-token');
+                API.token = null;
+
+                // Re-enable form
+                connectBtn.disabled = false;
+                connectBtn.textContent = 'Connect to SAM';
+            }
+        });
+    </script>
+</body>
+</html>

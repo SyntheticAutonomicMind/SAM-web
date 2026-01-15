@@ -1,0 +1,135 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* SPDX-FileCopyrightText: Copyright (c) 2026 Andrew Wyatt (Fewtarius) */
+
+/**
+ * Right Sidebar - Prompts & Mini-Prompts
+ */
+
+.prompt-sidebar {
+    width: 300px;
+    min-width: 300px;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: var(--space-md);
+}
+
+.prompt-sidebar.hidden {
+    display: none;
+}
+
+.sidebar-section {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.sidebar-section-title {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-sm) 0;
+}
+
+.sidebar-hint {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    margin: var(--space-xs) 0 0 0;
+}
+
+/* Mini-Prompts List */
+.mini-prompts-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.loading-mini-prompts {
+    padding: var(--space-md);
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: var(--font-size-sm);
+}
+
+.mini-prompt-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+}
+
+.mini-prompt-item:hover {
+    background: var(--bg-hover);
+}
+
+.mini-prompt-item input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.mini-prompt-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.mini-prompt-name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.mini-prompt-description {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Toggle button */
+.floating-toggle-btn {
+    position: fixed;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--brand-primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all var(--transition-fast);
+}
+
+.floating-toggle-btn:hover {
+    background: var(--brand-secondary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.prompt-sidebar.hidden ~ .floating-toggle-btn {
+    right: 10px;
+}
+
+.prompt-sidebar:not(.hidden) ~ .floating-toggle-btn {
+    right: 320px;
+}
+
+.btn-fullwidth {
+    width: 100%;
+    justify-content: center;
+}

@@ -1,0 +1,90 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* SPDX-FileCopyrightText: Copyright (c) 2026 Andrew Wyatt (Fewtarius) */
+
+/**
+ * Chat Header Styles
+ * Matches native SAM ChatWidget header (Sources/UserInterface/Chat/ChatWidget.swift line 1215)
+ */
+
+.chat-header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 16px;
+}
+
+.chat-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Line 1: Title + Indicators */
+.header-line-1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.conversation-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    flex-grow: 1;
+}
+
+.mini-prompts-indicator {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+/* Line 2: Metadata */
+.header-line-2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.message-count {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.conversation-id {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    user-select: all;
+    cursor: text;
+}
+
+.conversation-id:hover {
+    color: var(--text-secondary);
+}
+
+.cost-display {
+    margin-left: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-line-2 {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .conversation-id {
+        font-size: 0.65rem;
+    }
+    
+    .mini-prompts-indicator {
+        max-width: 150px;
+    }
+}

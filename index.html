@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAM-Web - Chat</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="css/chat-header.css">
+    <link rel="stylesheet" href="css/toolbar.css">
+    <link rel="stylesheet" href="css/folders.css">
+    <link rel="stylesheet" href="css/code-blocks.css">
+    <link rel="stylesheet" href="css/markdown-content.css">
+    <link rel="stylesheet" href="css/loading.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/prompt-sidebar.css">
+    <link rel="stylesheet" href="css/markdown-toolcards.css">
+    <link rel="stylesheet" href="css/highlight-theme.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="app-title">SAM-Web</h1>
+                <span class="status-indicator" id="connectionStatus">
+                    <span class="dot"></span> Connected
+                </span>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-ghost btn-sm" id="logoutBtn">
+                    🚪 Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Conversation Sidebar -->
+            <div class="conversation-sidebar">
+                <div class="sidebar-header">
+                    <button class="btn btn-primary" id="newConversationBtn">
+                        ➕ New Conversation
+                    </button>
+                </div>
+                <div class="conversation-list-container">
+                    <div id="conversationList" class="conversation-list">
+                        <!-- Conversations will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="chat-area">
+                <!-- Chat Header -->
+                <div class="chat-header" id="chatHeader" style="display: none;">
+                    <div class="chat-header-content">
+                        <!-- Line 1: Title + Indicators -->
+                        <div class="header-line-1">
+                            <h2 class="conversation-title" id="conversationTitle">Conversation</h2>
+                            <span class="shared-topic-indicator" id="sharedTopicIndicator" style="display: none;"></span>
+                            <span class="mini-prompts-indicator" id="miniPromptsIndicator"></span>
+                        </div>
+                        
+                        <!-- Line 2: Metadata -->
+                        <div class="header-line-2">
+                            <span class="message-count" id="headerMessageCount">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                                </svg>
+                                0 messages
+                            </span>
+                            <span class="conversation-id" id="headerConversationId">ID: ---</span>
+                            <span class="cost-display" id="headerCostDisplay">Cost: $0.002/1M</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Container -->
+                <div class="messages-container" id="messagesContainer">
+                    <div class="welcome-message">
+                        <h2>Welcome to SAM-Web</h2>
+                        <p>Start a conversation with SAM by typing a message below.</p>
+                    </div>
+                </div>
+
+                <!-- Chat Toolbar -->
+                <div class="chat-toolbar">
+                    <!-- Row 1: Main Toolbar -->
+                    <div class="toolbar-main">
+                        <div class="toolbar-group">
+                            <label>Model:</label>
+                            <select id="modelSelect" class="model-select">
+                                <option value="">Loading models...</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-group">
+                            <label>Prompt:</label>
+                            <select id="conversationSystemPrompt" class="form-select-inline">
+                                <option value="">SAM Default</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-group">
+                            <label>Personality:</label>
+                            <select id="conversationPersonality" class="form-select-inline">
+                                <option value="">Assistant (Default)</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-spacer"></div>
+                        <button class="toolbar-toggle-btn" id="toggleParametersBtn" title="Parameters">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Row 2: Advanced Parameters (Collapsible) -->
+                    <div class="advanced-parameters-toolbar" id="advancedParametersToolbar">
+                        <!-- Temperature -->
+                        <div class="parameter-group">
+                            <label>Temp:</label>
+                            <input type="range" id="temperatureSlider" class="parameter-slider" 
+                                   min="0" max="2" step="0.1" value="0.7">
+                            <span class="parameter-value" id="temperatureValue">0.7</span>
+                        </div>
+                        
+                        <!-- Top-P -->
+                        <div class="parameter-group">
+                            <label>Top-P:</label>
+                            <input type="range" id="topPSlider" class="parameter-slider" 
+                                   min="0" max="1" step="0.05" value="0.9">
+                            <span class="parameter-value" id="topPValue">0.90</span>
+                        </div>
+                        
+                        <!-- Repetition Penalty (Optional) -->
+                        <div class="parameter-group" id="repPenaltyGroup" style="display: none;">
+                            <label>Rep:</label>
+                            <input type="range" id="repPenaltySlider" class="parameter-slider" 
+                                   min="1" max="2" step="0.1" value="1.1">
+                            <span class="parameter-value" id="repPenaltyValue">1.1</span>
+                            <button class="rep-penalty-remove-btn" id="repPenaltyRemoveBtn" title="Remove repetition penalty">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="rep-penalty-add-btn" id="repPenaltyAddBtn">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                            </svg>
+                            Rep Penalty
+                        </button>
+                        
+                        <!-- Divider -->
+                        <div class="parameter-divider"></div>
+                        
+                        <!-- Reasoning Toggle -->
+                        <div class="parameter-toggle-group">
+                            <label class="parameter-toggle">
+                                <input type="checkbox" id="reasoningToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <label for="reasoningToggle">Reasoning</label>
+                        </div>
+                        
+                        <!-- Tools Toggle -->
+                        <div class="parameter-toggle-group">
+                            <label class="parameter-toggle">
+                                <input type="checkbox" id="toolsToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <label for="toolsToggle">Tools</label>
+                        </div>
+                        
+                        <!-- Divider -->
+                        <div class="parameter-divider"></div>
+                        
+                        <!-- Shared Topics Toggle -->
+                        <div class="parameter-toggle-group">
+                            <label class="parameter-toggle">
+                                <input type="checkbox" id="sharedTopicToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <label for="sharedTopicToggle">Shared Topic</label>
+                        </div>
+                        
+                        <!-- Shared Topics Selector (hidden by default) -->
+                        <div class="parameter-group" id="sharedTopicSelector" style="display: none;">
+                            <label>Topic:</label>
+                            <select id="sharedTopicSelect" class="form-select-inline">
+                                <option value="">Select topic...</option>
+                            </select>
+                            <button class="shared-topic-manage-btn" id="manageTopicsBtn" title="Manage topics">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="messageInput" 
+                            class="message-input" 
+                            placeholder="Type your message... (Shift+Enter for new line)"
+                            rows="1"
+                        ></textarea>
+                        <button class="btn btn-primary btn-icon" id="sendBtn" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="input-footer">
+                        <span class="char-count" id="charCount">0 / 32000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Prompt Toggle Button -->
+            <button class="floating-toggle-btn" id="toggleSidebarBtn" title="Toggle prompts panel">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 6h16M4 12h16m-7 6h7"/>
+                </svg>
+            </button>
+
+            <!-- Right Sidebar - Prompts & Settings -->
+            <div class="prompt-sidebar">
+                <div class="sidebar-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                        <h3 class="sidebar-section-title" style="margin-bottom: 0;">Mini-Prompts</h3>
+                        <button class="btn btn-ghost btn-sm" id="manageMiniPromptsBtn" title="Manage mini-prompts" onclick="if(typeof openMiniPromptManagement === 'function') { openMiniPromptManagement(); } else { alert('Function not found!'); }">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="miniPromptFilter" 
+                        class="form-input" 
+                        placeholder="Search mini-prompts..."
+                        style="margin-bottom: var(--space-sm);"
+                    >
+                    <div id="miniPromptsList" class="mini-prompts-list">
+                        <div class="loading-mini-prompts">Loading mini-prompts...</div>
+                    </div>
+                    <p class="sidebar-hint">Additional context and instructions</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mini-Prompt Management Modal -->
+    <div id="miniPromptModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div class="modal-content" style="max-width: 700px; background: var(--bg-primary); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div class="modal-header">
+                <h2>Manage Mini-Prompts</h2>
+                <button class="modal-close" id="closeMiniPromptModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Mini-Prompt List -->
+                <div class="mini-prompt-manager-list" id="miniPromptManagerList">
+                    <div class="loading">Loading mini-prompts...</div>
+                </div>
+                
+                <!-- Create/Edit Form (hidden by default) -->
+                <div class="mini-prompt-form" id="miniPromptForm" style="display: none;">
+                    <h3 id="formTitle">Create Mini-Prompt</h3>
+                    <input type="hidden" id="editPromptId" value="">
+                    
+                    <div class="form-group">
+                        <label for="promptName">Name</label>
+                        <input type="text" id="promptName" class="form-input" placeholder="e.g., Code Review" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="promptContent">Content</label>
+                        <textarea id="promptContent" class="form-input" rows="8" placeholder="Enter the prompt content..." required></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" id="cancelPromptBtn">Cancel</button>
+                        <button class="btn btn-primary" id="savePromptBtn">Save</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="newMiniPromptBtn">
+                    ➕ New Mini-Prompt
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+
+    <!-- Scripts -->
+    <script src="js/utils/highlight.min.js"></script>
+    <script type="module">
+        // Initialize Mermaid.js
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: false,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#5b9bd5',
+                primaryTextColor: '#f0f0f0',
+                primaryBorderColor: '#70ad47',
+                lineColor: '#a0a0a0',
+                secondaryColor: '#70ad47',
+                tertiaryColor: '#ffc000'
+            }
+        });
+        window.mermaid = mermaid;
+    </script>
+    <script src="js/utils/toast.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/parameters.js"></script>
+    <script src="js/folders.js"></script>
+    <script src="js/shared-topics.js"></script>
+    <script src="js/conversations.js"></script>
+    <script src="js/prompts.js"></script>
+    <script src="js/personalities.js"></script>
+    <script src="js/utils/markdown.js"></script>
+    <script>
+        // Check authentication
+        if (!API.isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+K or Cmd+K: Focus input
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                messageInput.focus();
+            }
+            
+            // Ctrl+L or Cmd+L: Clear chat
+            if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                e.preventDefault();
+                if (confirm('Clear all messages from current chat?')) {
+                    messages = [];
+                    messagesContainer.innerHTML = '<div class="welcome-message"><h2>Chat Cleared</h2><p>Start a new conversation.</p></div>';
+                }
+            }
+            
+            // Ctrl+N or Cmd+N: New conversation
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                Conversations.createConversation();
+            }
+            
+            // Ctrl+/ or Cmd+/: Show shortcuts help
+            if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+                e.preventDefault();
+                showShortcutsHelp();
+            }
+        });
+
+        function showShortcutsHelp() {
+            Toast.show(`
+Keyboard Shortcuts:
+• Ctrl/Cmd+K - Focus input
+• Ctrl/Cmd+L - Clear chat  
+• Ctrl/Cmd+N - New conversation
+• Ctrl/Cmd+/ - Show this help
+• Enter - Send message
+• Shift+Enter - New line
+            `.trim(), 'info', 5000);
+        }
+
+        // DOM Elements
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const modelSelect = document.getElementById('modelSelect');
+        const charCount = document.getElementById('charCount');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // State
+        let messages = [];
+        let currentModel = 'gpt-4';
+        let isStreaming = false;
+
+        // Initialize
+        async function init() {
+            // Show loading state
+            messagesContainer.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Connecting to SAM...</p></div>';
+            
+            try {
+                // Verify connection
+                await API.health();
+                updateConnectionStatus(true);
+
+                // Initialize parameters system (replaces settings)
+                await Parameters.init();
+
+                // Initialize prompts system
+                await Prompts.init();
+
+                // Initialize personalities system
+                await Personalities.init();
+
+                // Initialize shared topics system
+                await SharedTopics.init();
+
+                // Initialize conversations
+                await Conversations.init();
+
+                // Load models
+                await loadModels();
+
+                // Load and apply user preferences
+                await loadPreferences();
+
+                // Set up toolbar event listeners
+                setupToolbarListeners();
+
+                // Set up conversation loaded callback
+                window.onConversationLoaded = onConversationLoaded;
+
+            } catch (error) {
+                updateConnectionStatus(false);
+                messagesContainer.innerHTML = '<div class="error-state"><p>❌ Failed to connect to SAM</p><p class="error-details">' + error.message + '</p><button class="btn btn-primary" onclick="location.reload()">Retry</button></div>';
+                Toast.error('Failed to connect to SAM: ' + error.message);
+            }
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus(connected) {
+            connectionStatus.className = 'status-indicator ' + (connected ? 'connected' : 'disconnected');
+            connectionStatus.innerHTML = connected 
+                ? '<span class="dot"></span> Connected'
+                : '<span class="dot"></span> Disconnected';
+        }
+
+        // Load available models
+        async function loadModels() {
+            try {
+                const response = await API.getModels();
+                const models = response.data || [];
+
+                modelSelect.innerHTML = '';
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.id;
+                    modelSelect.appendChild(option);
+                });
+
+                // Default will be set by loadPreferences()
+                if (models.length > 0 && !currentModel) {
+                    currentModel = models[0].id;
+                    modelSelect.value = currentModel;
+                }
+            } catch (error) {
+                console.error('Failed to load models:', error);
+                Toast.error('Failed to load models');
+            }
+        }
+
+        // Load user preferences and apply defaults
+        async function loadPreferences() {
+            try {
+                const response = await API.request('/api/preferences', { method: 'GET' });
+                console.log('[Preferences] API response:', response);
+                
+                // Apply default model
+                if (response.defaultModel && modelSelect.querySelector(`option[value="${response.defaultModel}"]`)) {
+                    currentModel = response.defaultModel;
+                    modelSelect.value = response.defaultModel;
+                    console.log('[Preferences] Set model to:', response.defaultModel);
+                }
+
+                // Apply default system prompt
+                if (response.defaultSystemPromptId) {
+                    const systemPromptSelect = document.getElementById('conversationSystemPrompt');
+                    if (systemPromptSelect) {
+                        console.log('[Preferences] System Prompt - API returned:', response.defaultSystemPromptId);
+                        console.log('[Preferences] System Prompt - Available options:', 
+                            Array.from(systemPromptSelect.options).map(o => ({value: o.value, text: o.text})));
+                        
+                        // Set both the module state and the dropdown
+                        Prompts.selectedSystemPrompt = response.defaultSystemPromptId;
+                        systemPromptSelect.value = response.defaultSystemPromptId;
+                        
+                        console.log('[Preferences] System Prompt - After setting, dropdown value:', systemPromptSelect.value);
+                        console.log('[Preferences] System Prompt - Module state:', Prompts.selectedSystemPrompt);
+                    }
+                }
+
+                // Apply default personality
+                if (response.defaultPersonalityId) {
+                    const personalitySelect = document.getElementById('conversationPersonality');
+                    if (personalitySelect) {
+                        console.log('[Preferences] Personality - API returned:', response.defaultPersonalityId);
+                        console.log('[Preferences] Personality - Available options:', 
+                            Array.from(personalitySelect.options).map(o => ({value: o.value, text: o.text})));
+                        
+                        // Set both the module state and the dropdown
+                        Personalities.selectedPersonality = response.defaultPersonalityId;
+                        personalitySelect.value = response.defaultPersonalityId;
+                        
+                        console.log('[Preferences] Personality - After setting, dropdown value:', personalitySelect.value);
+                        console.log('[Preferences] Personality - Module state:', Personalities.selectedPersonality);
+                    }
+                }
+
+                console.log('[Preferences] Loaded defaults successfully');
+            } catch (error) {
+                console.error('[Preferences] Failed to load preferences:', error);
+                // Don't show error toast - preferences are optional
+            }
+        }
+
+        // Render all messages
+        function renderMessages() {
+            const welcomeMsg = messagesContainer.querySelector('.welcome-message');
+            if (welcomeMsg) welcomeMsg.remove();
+
+            messagesContainer.innerHTML = '';
+            messages.forEach(msg => {
+                appendMessage(msg.role, msg.content, false);
+            });
+            scrollToBottom();
+        }
+
+        // Create tool card element
+        function createToolCard(card) {
+            const toolCard = document.createElement('div');
+            toolCard.className = 'tool-card';
+            
+            const header = document.createElement('div');
+            header.className = 'tool-card-header';
+            
+            const icon = document.createElement('div');
+            icon.className = `tool-card-icon ${card.status}`;
+            icon.textContent = card.status === 'running' ? '⚙️' : (card.status === 'success' ? '✅' : '❌');
+            
+            const name = document.createElement('div');
+            name.className = 'tool-card-name';
+            name.textContent = card.name;
+            
+            const status = document.createElement('span');
+            status.className = `tool-card-status ${card.status}`;
+            status.textContent = card.status;
+            
+            header.appendChild(icon);
+            header.appendChild(name);
+            header.appendChild(status);
+            
+            const details = document.createElement('div');
+            details.className = 'tool-card-details';
+            details.textContent = card.details || '';
+            
+            toolCard.appendChild(header);
+            if (card.details) {
+                toolCard.appendChild(details);
+            }
+            
+            return toolCard;
+        }
+
+        // Setup toolbar event listeners
+        function setupToolbarListeners() {
+            // Model selector
+            const modelSelect = document.getElementById('modelSelect');
+            if (modelSelect) {
+                modelSelect.addEventListener('change', (e) => {
+                    currentModel = e.target.value;
+                    Parameters.setModel(currentModel);
+                    console.log('[Toolbar] Model changed:', currentModel);
+                });
+            }
+
+            // Parameters toggle button
+            const toggleParametersBtn = document.getElementById('toggleParametersBtn');
+            if (toggleParametersBtn) {
+                toggleParametersBtn.addEventListener('click', () => {
+                    Parameters.toggleAdvancedParameters();
+                });
+            }
+
+            // Temperature slider
+            const temperatureSlider = document.getElementById('temperatureSlider');
+            const temperatureValue = document.getElementById('temperatureValue');
+            if (temperatureSlider && temperatureValue) {
+                temperatureSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    Parameters.setTemperature(value);
+                    temperatureValue.textContent = value.toFixed(1);
+                });
+            }
+
+            // Top-P slider
+            const topPSlider = document.getElementById('topPSlider');
+            const topPValue = document.getElementById('topPValue');
+            if (topPSlider && topPValue) {
+                topPSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    Parameters.setTopP(value);
+                    topPValue.textContent = value.toFixed(2);
+                });
+            }
+
+            // Repetition penalty add button
+            const repPenaltyAddBtn = document.getElementById('repPenaltyAddBtn');
+            if (repPenaltyAddBtn) {
+                repPenaltyAddBtn.addEventListener('click', () => {
+                    Parameters.enableRepetitionPenalty();
+                });
+            }
+
+            // Repetition penalty slider
+            const repPenaltySlider = document.getElementById('repPenaltySlider');
+            const repPenaltyValue = document.getElementById('repPenaltyValue');
+            if (repPenaltySlider && repPenaltyValue) {
+                repPenaltySlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    Parameters.setRepetitionPenalty(value);
+                    repPenaltyValue.textContent = value.toFixed(1);
+                });
+            }
+
+            // Repetition penalty remove button
+            const repPenaltyRemoveBtn = document.getElementById('repPenaltyRemoveBtn');
+            if (repPenaltyRemoveBtn) {
+                repPenaltyRemoveBtn.addEventListener('click', () => {
+                    Parameters.disableRepetitionPenalty();
+                });
+            }
+
+            // Reasoning toggle
+            const reasoningToggle = document.getElementById('reasoningToggle');
+            if (reasoningToggle) {
+                reasoningToggle.addEventListener('change', () => {
+                    Parameters.toggleReasoning();
+                });
+            }
+
+            // Tools toggle
+            const toolsToggle = document.getElementById('toolsToggle');
+            if (toolsToggle) {
+                toolsToggle.addEventListener('change', () => {
+                    Parameters.toggleTools();
+                });
+            }
+
+            // Shared Topics toggle
+            const sharedTopicToggle = document.getElementById('sharedTopicToggle');
+            const sharedTopicSelector = document.getElementById('sharedTopicSelector');
+            if (sharedTopicToggle && sharedTopicSelector) {
+                sharedTopicToggle.addEventListener('change', async () => {
+                    SharedTopics.enabled = sharedTopicToggle.checked;
+                    
+                    if (SharedTopics.enabled) {
+                        // Show selector
+                        sharedTopicSelector.style.display = 'flex';
+                        
+                        // Populate topics dropdown
+                        await populateTopicsDropdown();
+                    } else {
+                        // Hide selector and detach if attached
+                        sharedTopicSelector.style.display = 'none';
+                        
+                        if (SharedTopics.currentTopicId && Conversations.activeConversation) {
+                            try {
+                                await SharedTopics.detachFromConversation(Conversations.activeConversation.id);
+                                Toast.success('Detached from shared topic');
+                                updateChatHeader();
+                            } catch (error) {
+                                console.error('[SharedTopics] Failed to detach:', error);
+                                Toast.error('Failed to detach from topic');
+                            }
+                        }
+                    }
+                    
+                    console.log('[SharedTopics] Toggle changed:', SharedTopics.enabled);
+                });
+            }
+
+            // Shared Topics selector
+            const sharedTopicSelect = document.getElementById('sharedTopicSelect');
+            if (sharedTopicSelect) {
+                sharedTopicSelect.addEventListener('change', async (e) => {
+                    const topicId = e.target.value;
+                    
+                    if (!topicId || !Conversations.activeConversation) {
+                        return;
+                    }
+                    
+                    try {
+                        await SharedTopics.attachToConversation(Conversations.activeConversation.id, topicId);
+                        Toast.success('Attached to shared topic');
+                        updateChatHeader();
+                    } catch (error) {
+                        console.error('[SharedTopics] Failed to attach:', error);
+                        Toast.error('Failed to attach to topic');
+                    }
+                });
+            }
+
+            // Manage Topics button
+            const manageTopicsBtn = document.getElementById('manageTopicsBtn');
+            if (manageTopicsBtn) {
+                manageTopicsBtn.addEventListener('click', () => {
+                    // TODO: Open topic management modal
+                    Toast.show('Topic management UI coming soon', 'info');
+                });
+            }
+
+            console.log('[Toolbar] Event listeners setup complete');
+        }
+
+        // Populate shared topics dropdown
+        async function populateTopicsDropdown() {
+            const sharedTopicSelect = document.getElementById('sharedTopicSelect');
+            if (!sharedTopicSelect) return;
+            
+            // Refresh topics from API
+            await SharedTopics.fetchTopics();
+            
+            // Clear existing options
+            sharedTopicSelect.innerHTML = '<option value="">Select topic...</option>';
+            
+            // Add topics
+            SharedTopics.topics.forEach(topic => {
+                const option = document.createElement('option');
+                option.value = topic.id;
+                option.textContent = topic.name;
+                if (topic.description) {
+                    option.title = topic.description;
+                }
+                sharedTopicSelect.appendChild(option);
+            });
+            
+            // Select current topic if attached
+            if (SharedTopics.currentTopicId) {
+                sharedTopicSelect.value = SharedTopics.currentTopicId;
+            }
+        }
+
+        // Handle conversation loaded
+        async function onConversationLoaded(conversation) {
+            if (!conversation) {
+                // New conversation - clear messages and reset prompts
+                messages = [];
+                messagesContainer.innerHTML = '<div class="welcome-message"><h2>New Conversation</h2><p>Start chatting with SAM.</p></div>';
+                Prompts.reset();
+                Personalities.reset();
+                
+                // Reset parameters for new conversation
+                Parameters.resetForNewConversation();
+                
+                // Re-apply default preferences for new conversation
+                await loadPreferences();
+                
+                // Show chat header for new conversation with default values
+                updateChatHeaderForNewConversation();
+                
+                return;
+            }
+
+            // Debug: log conversation structure
+            console.log('Conversation loaded:', conversation);
+
+            // Load conversation messages from API response
+            // API returns ConversationData with messages array
+            if (Array.isArray(conversation.messages)) {
+                messages = conversation.messages.map(msg => ({
+                    role: msg.isFromUser ? 'user' : 'assistant',
+                    content: msg.content || ''
+                }));
+            } else {
+                messages = [];
+            }
+            
+            renderMessages();
+
+            // Load prompts from conversation settings
+            Prompts.loadFromConversation(conversation);
+
+            // Load personality from conversation settings
+            Personalities.loadFromConversation(conversation);
+
+            // Load parameters from conversation
+            Parameters.loadFromConversation(conversation);
+
+            // Load shared topics from conversation
+            SharedTopics.loadFromConversation(conversation);
+            
+            // Update shared topics UI
+            const sharedTopicToggle = document.getElementById('sharedTopicToggle');
+            const sharedTopicSelector = document.getElementById('sharedTopicSelector');
+            if (sharedTopicToggle && sharedTopicSelector) {
+                sharedTopicToggle.checked = SharedTopics.enabled;
+                sharedTopicSelector.style.display = SharedTopics.enabled ? 'flex' : 'none';
+                
+                if (SharedTopics.enabled) {
+                    await populateTopicsDropdown();
+                }
+            }
+
+            // Update settings if conversation has settings
+            if (conversation.settings && conversation.settings.selectedModel) {
+                currentModel = conversation.settings.selectedModel;
+                modelSelect.value = currentModel;
+            }
+
+            // Update chat header
+            updateChatHeader(conversation);
+        }
+
+        // Update chat header with conversation details
+        function updateChatHeader(conversation) {
+            const chatHeader = document.getElementById('chatHeader');
+            const conversationTitle = document.getElementById('conversationTitle');
+            const messageCount = document.getElementById('headerMessageCount');
+            const conversationId = document.getElementById('headerConversationId');
+            const miniPromptsIndicator = document.getElementById('miniPromptsIndicator');
+            const costDisplay = document.getElementById('headerCostDisplay');
+
+            if (!chatHeader || !conversation) return;
+
+            // Show header
+            chatHeader.style.display = 'block';
+
+            // Update title
+            if (conversationTitle) {
+                conversationTitle.textContent = conversation.title || 'Conversation';
+            }
+
+            // Update message count
+            if (messageCount) {
+                const count = messages.length;
+                messageCount.innerHTML = `
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    ${count} message${count !== 1 ? 's' : ''}
+                `;
+            }
+
+            // Update conversation ID (full UUID, selectable)
+            if (conversationId) {
+                conversationId.textContent = `ID: ${conversation.id || '---'}`;
+            }
+
+            // Update mini-prompts indicator (placeholder for now)
+            if (miniPromptsIndicator && conversation.settings && conversation.settings.mini_prompt_ids) {
+                const enabledCount = conversation.settings.mini_prompt_ids.length;
+                if (enabledCount > 0) {
+                    miniPromptsIndicator.textContent = `Active: ${enabledCount} mini-prompt${enabledCount !== 1 ? 's' : ''}`;
+                } else {
+                    miniPromptsIndicator.textContent = '';
+                }
+            } else if (miniPromptsIndicator) {
+                miniPromptsIndicator.textContent = '';
+            }
+
+            // Update shared topic indicator
+            const sharedTopicIndicator = document.getElementById('sharedTopicIndicator');
+            if (sharedTopicIndicator) {
+                if (SharedTopics.enabled && SharedTopics.currentTopicId) {
+                    const topic = SharedTopics.getCurrentTopic();
+                    if (topic) {
+                        sharedTopicIndicator.textContent = `📁 Shared Topic: ${topic.name}`;
+                        sharedTopicIndicator.style.display = 'inline';
+                    } else {
+                        sharedTopicIndicator.style.display = 'none';
+                    }
+                } else {
+                    sharedTopicIndicator.style.display = 'none';
+                }
+            }
+
+            // Update cost display and GitHub Copilot quota
+            if (costDisplay) {
+                const isGitHubCopilot = currentModel.startsWith('github_copilot/');
+                
+                if (isGitHubCopilot) {
+                    // Fetch and display GitHub Copilot quota information
+                    updateGitHubCopilotQuota(costDisplay);
+                } else {
+                    // Hide for non-GitHub models
+                    costDisplay.textContent = '';
+                }
+            }
+        }
+
+        // Update GitHub Copilot quota display
+        async function updateGitHubCopilotQuota(costDisplay) {
+            try {
+                const response = await API.request('/api/github-copilot/quota', { method: 'GET' });
+                
+                if (response.available) {
+                    const percentUsed = response.percentUsed;
+                    const statusText = `Status: ${response.used}/${response.entitlement} Used: ${percentUsed.toFixed(1)}%`;
+                    
+                    costDisplay.textContent = statusText;
+                    
+                    // Color code based on usage
+                    if (percentUsed >= 90) {
+                        costDisplay.style.color = '#ff5555';  // red
+                    } else if (percentUsed >= 80) {
+                        costDisplay.style.color = '#ffaa55';  // orange
+                    } else {
+                        costDisplay.style.color = 'var(--text-secondary)';
+                    }
+                } else {
+                    costDisplay.textContent = '';  // Hide if not available
+                }
+            } catch (error) {
+                console.error('[GitHub Copilot] Failed to fetch quota:', error);
+                costDisplay.textContent = '';  // Hide on error
+            }
+        }
+
+        // Update chat header for new conversation (no conversation object yet)
+        function updateChatHeaderForNewConversation() {
+            const chatHeader = document.getElementById('chatHeader');
+            const conversationTitle = document.getElementById('conversationTitle');
+            const messageCount = document.getElementById('headerMessageCount');
+            const conversationId = document.getElementById('headerConversationId');
+            const miniPromptsIndicator = document.getElementById('miniPromptsIndicator');
+            const costDisplay = document.getElementById('headerCostDisplay');
+
+            if (!chatHeader) return;
+
+            // Show header
+            chatHeader.style.display = 'block';
+
+            // Set default title
+            if (conversationTitle) {
+                conversationTitle.textContent = 'New Conversation';
+            }
+
+            // Set message count to 0
+            if (messageCount) {
+                messageCount.innerHTML = `
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    0 messages
+                `;
+            }
+
+            // Hide conversation ID for new conversation
+            if (conversationId) {
+                conversationId.textContent = '';
+            }
+
+            // Clear mini-prompts indicator
+            if (miniPromptsIndicator) {
+                miniPromptsIndicator.textContent = '';
+            }
+
+            // Update cost/quota display
+            if (costDisplay) {
+                const isGitHubCopilot = currentModel.startsWith('github_copilot/');
+                
+                if (isGitHubCopilot) {
+                    updateGitHubCopilotQuota(costDisplay);
+                } else {
+                    costDisplay.textContent = '';  // Hide for non-GitHub models
+                }
+            }
+        }
+
+        // Update just the message count in the header
+        function updateMessageCount() {
+            const messageCount = document.getElementById('headerMessageCount');
+            if (messageCount) {
+                const count = messages.length;
+                messageCount.innerHTML = `
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    ${count} message${count !== 1 ? 's' : ''}
+                `;
+            }
+        }
+
+        // Append message to chat
+        function appendMessage(role, content, save = true) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message message-${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? '👤' : '🤖';
+            
+            const body = document.createElement('div');
+            body.className = 'message-body';
+            
+            const header = document.createElement('div');
+            header.className = 'message-header';
+            
+            // Add thinking indicator for assistant when processing
+            if (role === 'assistant' && !content.trim()) {
+                header.innerHTML = 'SAM <span class="thinking-indicator"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Thinking...</span>';
+            } else {
+                header.textContent = role === 'user' ? 'You' : 'SAM';
+            }
+            
+            const text = document.createElement('div');
+            text.className = 'message-content';
+            
+            // Check for tool cards
+            if (Markdown.hasToolCard(content)) {
+                const cards = Markdown.parseToolCards(content);
+                cards.forEach(card => {
+                    const toolCard = createToolCard(card);
+                    text.appendChild(toolCard);
+                });
+                
+                // Also render remaining text (without tool markers)
+                const cleanContent = content
+                    .replace(/SUCCESS:.*$/gm, '')
+                    .replace(/EXECUTING:.*$/gm, '')
+                    .replace(/<tool_call>.*?<\/tool_call>/gs, '')
+                    .trim();
+                
+                if (cleanContent) {
+                    const contentDiv = document.createElement('div');
+                    contentDiv.innerHTML = Markdown.render(cleanContent);
+                    text.appendChild(contentDiv);
+                }
+            } else {
+                // Normal message - render markdown
+                text.innerHTML = Markdown.render(content);
+            }
+            
+            body.appendChild(header);
+            body.appendChild(text);
+            messageEl.appendChild(avatar);
+            messageEl.appendChild(body);
+            
+            messagesContainer.appendChild(messageEl);
+            
+            if (save) {
+                messages.push({ role, content });
+                updateMessageCount();
+            }
+            
+            scrollToBottom();
+            
+            // Initialize Mermaid diagrams if any (async, non-blocking)
+            if (typeof Markdown.initializeMermaid === 'function') {
+                Markdown.initializeMermaid().catch(err => console.error('Mermaid init error:', err));
+            }
+            
+            return messageEl;
+        }
+
+        // Send message
+        async function sendMessage() {
+            const content = messageInput.value.trim();
+            if (!content || isStreaming) return;
+
+            // Add user message
+            appendMessage('user', content);
+            messageInput.value = '';
+            updateCharCount();
+
+            // Create assistant message placeholder
+            const assistantMsg = appendMessage('assistant', '', false);
+            const contentEl = assistantMsg.querySelector('.message-content');
+            
+            isStreaming = true;
+            sendBtn.disabled = true;
+            messageInput.disabled = true;
+
+            let fullResponse = '';
+
+            try {
+                // Prepare request with parameters and prompts
+                const parametersParams = Parameters.getRequestParams();
+                const promptsParams = Prompts.getRequestParams();
+                const personalityParams = Personalities.getRequestParams();
+                
+                const request = {
+                    model: currentModel,
+                    messages: messages.map(m => ({ role: m.role, content: m.content })),
+                    stream: true,
+                    ...parametersParams,
+                    ...promptsParams,
+                    ...personalityParams
+                };
+
+                // Send conversationId if we have an active conversation
+                if (Conversations.activeConversationId) {
+                    request.conversation_id = Conversations.activeConversationId;
+                }
+
+                // Start streaming
+                API.chatCompletionStreaming(
+                    request,
+                    // onChunk
+                    (chunk) => {
+                        if (chunk.choices && chunk.choices[0]?.delta?.content) {
+                            const delta = chunk.choices[0].delta.content;
+                            fullResponse += delta;
+                            
+                            // Remove thinking indicator on first chunk
+                            const header = assistantMsg.querySelector('.message-header');
+                            if (header && header.querySelector('.thinking-indicator')) {
+                                header.textContent = 'SAM';
+                            }
+                            
+                            contentEl.innerHTML = Markdown.render(fullResponse);
+                            if (typeof Markdown.initializeMermaid === 'function') {
+                                Markdown.initializeMermaid().catch(err => console.error('Mermaid init error:', err));
+                            }
+                            scrollToBottom();
+                        }
+                    },
+                    // onComplete
+                    async () => {
+                        messages.push({ role: 'assistant', content: fullResponse });
+                        updateMessageCount();
+                        isStreaming = false;
+                        sendBtn.disabled = false;
+                        messageInput.disabled = false;
+                        messageInput.focus();
+
+                        // Update conversation list (reload to get new message counts)
+                        await Conversations.updateAfterMessage();
+                    },
+                    // onError
+                    (error) => {
+                        Toast.error('Streaming error: ' + error.message);
+                        contentEl.textContent = '❌ Error: ' + error.message;
+                        isStreaming = false;
+                        sendBtn.disabled = false;
+                        messageInput.disabled = false;
+                    }
+                );
+
+            } catch (error) {
+                Toast.error('Failed to send message: ' + error.message);
+                assistantMsg.remove();
+                isStreaming = false;
+                sendBtn.disabled = false;
+                messageInput.disabled = false;
+            }
+        }
+
+        // Update character count
+        function updateCharCount() {
+            const length = messageInput.value.length;
+            charCount.textContent = `${length} / 32000`;
+            sendBtn.disabled = length === 0 || isStreaming;
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', () => {
+            updateCharCount();
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
+        });
+
+        // Send on Enter (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Send button click
+        sendBtn.addEventListener('click', sendMessage);
+
+        // Model selection
+        modelSelect.addEventListener('change', () => {
+            currentModel = modelSelect.value;
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('sam-api-token');
+                window.location.href = 'login.html';
+            }
+        });
+
+        // New conversation button (from sidebar)
+        const newConversationBtn = document.getElementById('newConversationBtn');
+        if (newConversationBtn) {
+            newConversationBtn.addEventListener('click', async () => {
+                await Conversations.createConversation();
+            });
+        }
+
+        // Mini-Prompt Management Functions (Global scope for onclick)
+        async function openMiniPromptManagement() {
+            console.log('[MiniPrompt] Opening management modal');
+            const miniPromptModal = document.getElementById('miniPromptModal');
+            if (miniPromptModal) {
+                miniPromptModal.style.display = 'flex';
+                console.log('[MiniPrompt] Modal display set to flex');
+                await loadMiniPromptsForManagement();
+                console.log('[MiniPrompt] Mini-prompts loaded');
+            }
+        }
+
+        async function loadMiniPromptsForManagement() {
+            const miniPromptManagerList = document.getElementById('miniPromptManagerList');
+            if (!miniPromptManagerList) return;
+
+            miniPromptManagerList.innerHTML = '<div class="loading">Loading mini-prompts...</div>';
+            
+            await Prompts.fetchMiniPrompts();
+            
+            if (Prompts.miniPrompts.length === 0) {
+                miniPromptManagerList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: var(--space-lg);">No mini-prompts yet. Create one to get started!</p>';
+                return;
+            }
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: var(--space-sm);">';
+            Prompts.miniPrompts.forEach(prompt => {
+                html += `
+                    <div class="mini-prompt-item" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-md); display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0 0 var(--space-xs) 0;">${prompt.name}</h4>
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9em; white-space: pre-wrap; max-height: 100px; overflow: auto;">${prompt.content.substring(0, 200)}${prompt.content.length > 200 ? '...' : ''}</p>
+                        </div>
+                        <div style="display: flex; gap: var(--space-xs);">
+                            <button class="btn btn-ghost btn-sm edit-prompt-btn" data-id="${prompt.id}" title="Edit">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn btn-ghost btn-sm delete-prompt-btn" data-id="${prompt.id}" title="Delete" style="color: var(--error-color);">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            miniPromptManagerList.innerHTML = html;
+            
+            // Add event listeners
+            document.querySelectorAll('.edit-prompt-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const promptId = btn.dataset.id;
+                    editMiniPrompt(promptId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-prompt-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const promptId = btn.dataset.id;
+                    if (confirm('Are you sure you want to delete this mini-prompt?')) {
+                        await deleteMiniPrompt(promptId);
+                    }
+                });
+            });
+        }
+
+        function showMiniPromptForm(promptId = null) {
+            const formTitle = document.getElementById('formTitle');
+            const editPromptId = document.getElementById('editPromptId');
+            const promptName = document.getElementById('promptName');
+            const promptContent = document.getElementById('promptContent');
+            const miniPromptForm = document.getElementById('miniPromptForm');
+            
+            if (promptId) {
+                const prompt = Prompts.miniPrompts.find(p => p.id === promptId);
+                if (prompt) {
+                    formTitle.textContent = 'Edit Mini-Prompt';
+                    editPromptId.value = promptId;
+                    promptName.value = prompt.name;
+                    promptContent.value = prompt.content;
+                }
+            } else {
+                formTitle.textContent = 'Create Mini-Prompt';
+                editPromptId.value = '';
+                promptName.value = '';
+                promptContent.value = '';
+            }
+            
+            miniPromptForm.style.display = 'block';
+        }
+
+        function editMiniPrompt(promptId) {
+            showMiniPromptForm(promptId);
+        }
+
+        async function saveMiniPrompt() {
+            const editPromptId = document.getElementById('editPromptId').value;
+            const name = document.getElementById('promptName').value.trim();
+            const content = document.getElementById('promptContent').value.trim();
+            const miniPromptForm = document.getElementById('miniPromptForm');
+            
+            if (!name || !content) {
+                Toast.error('Name and content are required');
+                return;
+            }
+            
+            try {
+                if (editPromptId) {
+                    // Update existing
+                    await API.request(`/api/mini-prompts/${editPromptId}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ name, content })
+                    });
+                    Toast.success('Mini-prompt updated');
+                } else {
+                    // Create new
+                    await API.request('/api/mini-prompts', {
+                        method: 'POST',
+                        body: JSON.stringify({ name, content })
+                    });
+                    Toast.success('Mini-prompt created');
+                }
+                
+                // Refresh list
+                await Prompts.fetchMiniPrompts();
+                await loadMiniPromptsForManagement();
+                
+                // Hide form
+                miniPromptForm.style.display = 'none';
+                document.getElementById('editPromptId').value = '';
+                document.getElementById('promptName').value = '';
+                document.getElementById('promptContent').value = '';
+                
+                // Refresh sidebar
+                Prompts.renderMiniPrompts();
+            } catch (error) {
+                console.error('[MiniPrompt] Failed to save:', error);
+                Toast.error('Failed to save mini-prompt');
+            }
+        }
+
+        async function deleteMiniPrompt(promptId) {
+            try {
+                await API.request(`/api/mini-prompts/${promptId}`, {
+                    method: 'DELETE'
+                });
+                
+                Toast.success('Mini-prompt deleted');
+                
+                // Refresh list
+                await Prompts.fetchMiniPrompts();
+                await loadMiniPromptsForManagement();
+                
+                // Refresh sidebar
+                Prompts.renderMiniPrompts();
+            } catch (error) {
+                console.error('[MiniPrompt] Failed to delete:', error);
+                Toast.error('Failed to delete mini-prompt');
+            }
+        }
+
+        // Initialize app
+        init().then(() => {
+            console.log('[App] Initialization complete, setting up mini-prompt management');
+            setupMiniPromptManagement();
+        });
+
+        // Setup mini-prompt management after DOM is ready
+        function setupMiniPromptManagement() {
+            // Mini-Prompt Management Modal
+            const miniPromptModal = document.getElementById('miniPromptModal');
+            const manageMiniPromptsBtn = document.getElementById('manageMiniPromptsBtn');
+            const closeMiniPromptModal = document.getElementById('closeMiniPromptModal');
+            const newMiniPromptBtn = document.getElementById('newMiniPromptBtn');
+            const miniPromptForm = document.getElementById('miniPromptForm');
+            const cancelPromptBtn = document.getElementById('cancelPromptBtn');
+            const savePromptBtn = document.getElementById('savePromptBtn');
+            const miniPromptManagerList = document.getElementById('miniPromptManagerList');
+
+            console.log('[MiniPrompt] Modal elements found:', {
+                modal: !!miniPromptModal,
+                manageBtn: !!manageMiniPromptsBtn,
+                closeBtn: !!closeMiniPromptModal,
+                newBtn: !!newMiniPromptBtn
+            });
+
+            // Note: Manage button uses inline onclick, no need for addEventListener
+
+            // Close modal
+            if (closeMiniPromptModal) {
+            closeMiniPromptModal.addEventListener('click', () => {
+                miniPromptModal.style.display = 'none';
+                miniPromptForm.style.display = 'none';
+            });
+        }
+
+        // Close on outside click
+        window.addEventListener('click', (e) => {
+            if (e.target === miniPromptModal) {
+                miniPromptModal.style.display = 'none';
+                miniPromptForm.style.display = 'none';
+            }
+        });
+
+        // New mini-prompt button
+        if (newMiniPromptBtn) {
+            newMiniPromptBtn.addEventListener('click', () => {
+                showMiniPromptForm();
+            });
+        }
+
+        // Cancel button
+        if (cancelPromptBtn) {
+            cancelPromptBtn.addEventListener('click', () => {
+                miniPromptForm.style.display = 'none';
+                document.getElementById('editPromptId').value = '';
+                document.getElementById('promptName').value = '';
+                document.getElementById('promptContent').value = '';
+            });
+        }
+
+        // Save button
+        if (savePromptBtn) {
+            savePromptBtn.addEventListener('click', async () => {
+                await saveMiniPrompt();
+            });
+        }
+
+        async function openMiniPromptManagement() {
+            console.log('[MiniPrompt] Opening management modal');
+            miniPromptModal.style.display = 'flex';
+            console.log('[MiniPrompt] Modal display set to flex');
+            await loadMiniPromptsForManagement();
+            console.log('[MiniPrompt] Mini-prompts loaded');
+        }
+
+        async function loadMiniPromptsForManagement() {
+            miniPromptManagerList.innerHTML = '<div class="loading">Loading mini-prompts...</div>';
+            
+            await Prompts.fetchMiniPrompts();
+            
+            if (Prompts.miniPrompts.length === 0) {
+                miniPromptManagerList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: var(--space-lg);">No mini-prompts yet. Create one to get started!</p>';
+                return;
+            }
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: var(--space-sm);">';
+            Prompts.miniPrompts.forEach(prompt => {
+                html += `
+                    <div class="mini-prompt-item" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-md); display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0 0 var(--space-xs) 0;">${prompt.name}</h4>
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9em; white-space: pre-wrap; max-height: 100px; overflow: auto;">${prompt.content.substring(0, 200)}${prompt.content.length > 200 ? '...' : ''}</p>
+                        </div>
+                        <div style="display: flex; gap: var(--space-xs);">
+                            <button class="btn btn-ghost btn-sm edit-prompt-btn" data-id="${prompt.id}" title="Edit">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn btn-ghost btn-sm delete-prompt-btn" data-id="${prompt.id}" title="Delete" style="color: var(--error-color);">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            miniPromptManagerList.innerHTML = html;
+            
+            // Add event listeners
+            document.querySelectorAll('.edit-prompt-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const promptId = btn.dataset.id;
+                    editMiniPrompt(promptId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-prompt-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const promptId = btn.dataset.id;
+                    if (confirm('Are you sure you want to delete this mini-prompt?')) {
+                        await deleteMiniPrompt(promptId);
+                    }
+                });
+            });
+        }
+
+        function showMiniPromptForm(promptId = null) {
+            const formTitle = document.getElementById('formTitle');
+            const editPromptId = document.getElementById('editPromptId');
+            const promptName = document.getElementById('promptName');
+            const promptContent = document.getElementById('promptContent');
+            
+            if (promptId) {
+                const prompt = Prompts.miniPrompts.find(p => p.id === promptId);
+                if (prompt) {
+                    formTitle.textContent = 'Edit Mini-Prompt';
+                    editPromptId.value = promptId;
+                    promptName.value = prompt.name;
+                    promptContent.value = prompt.content;
+                }
+            } else {
+                formTitle.textContent = 'Create Mini-Prompt';
+                editPromptId.value = '';
+                promptName.value = '';
+                promptContent.value = '';
+            }
+            
+            miniPromptForm.style.display = 'block';
+        }
+
+        function editMiniPrompt(promptId) {
+            showMiniPromptForm(promptId);
+        }
+
+        async function saveMiniPrompt() {
+            const editPromptId = document.getElementById('editPromptId').value;
+            const name = document.getElementById('promptName').value.trim();
+            const content = document.getElementById('promptContent').value.trim();
+            
+            if (!name || !content) {
+                Toast.error('Name and content are required');
+                return;
+            }
+            
+            try {
+                if (editPromptId) {
+                    // Update existing
+                    await API.request(`/api/mini-prompts/${editPromptId}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ name, content })
+                    });
+                    Toast.success('Mini-prompt updated');
+                } else {
+                    // Create new
+                    await API.request('/api/mini-prompts', {
+                        method: 'POST',
+                        body: JSON.stringify({ name, content })
+                    });
+                    Toast.success('Mini-prompt created');
+                }
+                
+                // Refresh list
+                await Prompts.fetchMiniPrompts();
+                await loadMiniPromptsForManagement();
+                
+                // Hide form
+                miniPromptForm.style.display = 'none';
+                document.getElementById('editPromptId').value = '';
+                document.getElementById('promptName').value = '';
+                document.getElementById('promptContent').value = '';
+                
+                // Refresh sidebar
+                Prompts.renderMiniPrompts();
+            } catch (error) {
+                console.error('[MiniPrompt] Failed to save:', error);
+                Toast.error('Failed to save mini-prompt');
+            }
+        }
+
+        async function deleteMiniPrompt(promptId) {
+            try {
+                await API.request(`/api/mini-prompts/${promptId}`, {
+                    method: 'DELETE'
+                });
+                
+                Toast.success('Mini-prompt deleted');
+                
+                // Refresh list
+                await Prompts.fetchMiniPrompts();
+                await loadMiniPromptsForManagement();
+                
+                // Refresh sidebar
+                Prompts.renderMiniPrompts();
+            } catch (error) {
+                console.error('[MiniPrompt] Failed to delete:', error);
+                Toast.error('Failed to delete mini-prompt');
+            }
+        }
+        } // End of setupMiniPromptManagement
+
+    </script>
+</body>
+</html>

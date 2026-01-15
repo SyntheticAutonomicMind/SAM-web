@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAM-Web - Chat</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="css/settings.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="app-title">SAM-Web</h1>
+                <span class="status-indicator" id="connectionStatus">
+                    <span class="dot"></span> Connected
+                </span>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-ghost btn-sm" id="settingsBtn">
+                    ⚙️ Settings
+                </button>
+                <button class="btn btn-ghost btn-sm" id="logoutBtn">
+                    🚪 Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Messages Container -->
+            <div class="messages-container" id="messagesContainer">
+                <div class="welcome-message">
+                    <h2>Welcome to SAM-Web</h2>
+                    <p>Start a conversation with SAM by typing a message below.</p>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        class="message-input" 
+                        placeholder="Type your message... (Shift+Enter for new line)"
+                        rows="1"
+                    ></textarea>
+                    <button class="btn btn-primary btn-icon" id="sendBtn" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <select id="modelSelect" class="model-select">
+                        <option value="">Loading models...</option>
+                    </select>
+                    <span class="char-count" id="charCount">0 / 32000</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal-backdrop hidden">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Settings</h2>
+                <button class="btn btn-ghost btn-icon" id="closeSettingsBtn">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab active" data-tab="prompts">Prompts</button>
+                    <button class="tab" data-tab="advanced">Advanced</button>
+                    <button class="tab" data-tab="conversation">Conversation</button>
+                </div>
+
+                <!-- Prompts Tab -->
+                <div id="promptsTab" class="tab-content active">
+                    <div class="setting-group">
+                        <label for="systemPromptSelect" class="setting-label">
+                            System Prompt (Personality)
+                        </label>
+                        <select id="systemPromptSelect" class="form-select">
+                            <option value="">Loading...</option>
+                        </select>
+                        <p class="setting-hint">Choose SAM's personality and behavior</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            Mini-Prompts (Context Injection)
+                        </label>
+                        <div id="miniPromptsList" class="mini-prompts-list">
+                            <p style="color: var(--text-secondary);">Loading...</p>
+                        </div>
+                        <p class="setting-hint">Select additional context to inject into conversation</p>
+                    </div>
+                </div>
+
+                <!-- Advanced Tab -->
+                <div id="advancedTab" class="tab-content hidden">
+                    <div class="setting-group">
+                        <label for="temperatureSlider" class="setting-label">
+                            Temperature: <span id="temperatureValue">0.7</span>
+                        </label>
+                        <input 
+                            type="range" 
+                            id="temperatureSlider" 
+                            class="slider"
+                            min="0" 
+                            max="2" 
+                            step="0.1" 
+                            value="0.7"
+                        >
+                        <p class="setting-hint">Higher = more creative, Lower = more focused</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="topPSlider" class="setting-label">
+                            Top P: <span id="topPValue">0.9</span>
+                        </label>
+                        <input 
+                            type="range" 
+                            id="topPSlider" 
+                            class="slider"
+                            min="0" 
+                            max="1" 
+                            step="0.05" 
+                            value="0.9"
+                        >
+                        <p class="setting-hint">Nucleus sampling threshold</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="maxTokensInput" class="setting-label">
+                            Max Tokens
+                        </label>
+                        <input 
+                            type="number" 
+                            id="maxTokensInput" 
+                            class="form-input"
+                            min="1" 
+                            max="128000" 
+                            value="4096"
+                            placeholder="4096"
+                        >
+                        <p class="setting-hint">Maximum response length</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label checkbox-label">
+                            <input type="checkbox" id="streamCheckbox" checked>
+                            Enable Streaming
+                        </label>
+                        <p class="setting-hint">Show responses in real-time</p>
+                    </div>
+                </div>
+
+                <!-- Conversation Tab -->
+                <div id="conversationTab" class="tab-content hidden">
+                    <div class="setting-group">
+                        <label class="setting-label">Conversation ID</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input 
+                                type="text" 
+                                id="conversationIdInput" 
+                                class="form-input"
+                                readonly
+                                placeholder="Not set (ephemeral)"
+                            >
+                            <button class="btn btn-secondary" id="newConversationBtn">New</button>
+                        </div>
+                        <p class="setting-hint">Current conversation identifier</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <button class="btn btn-secondary" id="clearHistoryBtn">Clear Message History</button>
+                        <p class="setting-hint">Remove all messages from current session</p>
+                    </div>
+
+                    <div class="setting-group">
+                        <button class="btn btn-secondary" id="exportConversationBtn">Export Conversation</button>
+                        <p class="setting-hint">Download conversation as JSON</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="saveSettingsBtn">Save & Apply</button>
+                <button class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils/toast.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/settings.js"></script>
+    <script>
+        // Check authentication
+        if (!API.isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+
+        // DOM Elements
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const modelSelect = document.getElementById('modelSelect');
+        const charCount = document.getElementById('charCount');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+
+        // State
+        let messages = [];
+        let currentModel = 'gpt-4';
+        let isStreaming = false;
+
+        // Initialize
+        async function init() {
+            try {
+                // Verify connection
+                await API.health();
+                updateConnectionStatus(true);
+
+                // Initialize settings system
+                await Settings.init();
+
+                // Load models
+                await loadModels();
+
+                // Restore session
+                loadSession();
+
+            } catch (error) {
+                updateConnectionStatus(false);
+                Toast.error('Failed to connect to SAM: ' + error.message);
+            }
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus(connected) {
+            connectionStatus.className = 'status-indicator ' + (connected ? 'connected' : 'disconnected');
+            connectionStatus.innerHTML = connected 
+                ? '<span class="dot"></span> Connected'
+                : '<span class="dot"></span> Disconnected';
+        }
+
+        // Load available models
+        async function loadModels() {
+            try {
+                const response = await API.getModels();
+                const models = response.data || [];
+
+                modelSelect.innerHTML = '';
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.id;
+                    modelSelect.appendChild(option);
+                });
+
+                // Select default model
+                if (models.length > 0) {
+                    currentModel = models[0].id;
+                    modelSelect.value = currentModel;
+                }
+            } catch (error) {
+                console.error('Failed to load models:', error);
+                Toast.error('Failed to load models');
+            }
+        }
+
+        // Load session from localStorage
+        function loadSession() {
+            const savedMessages = localStorage.getItem('sam-web-messages');
+            if (savedMessages) {
+                messages = JSON.parse(savedMessages);
+                renderMessages();
+            }
+        }
+
+        // Save session to localStorage
+        function saveSession() {
+            localStorage.setItem('sam-web-messages', JSON.stringify(messages));
+        }
+
+        // Render all messages
+        function renderMessages() {
+            const welcomeMsg = messagesContainer.querySelector('.welcome-message');
+            if (welcomeMsg) welcomeMsg.remove();
+
+            messagesContainer.innerHTML = '';
+            messages.forEach(msg => {
+                appendMessage(msg.role, msg.content, false);
+            });
+            scrollToBottom();
+        }
+
+        // Append message to chat
+        function appendMessage(role, content, save = true) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message message-${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? '👤' : '🤖';
+            
+            const body = document.createElement('div');
+            body.className = 'message-body';
+            
+            const header = document.createElement('div');
+            header.className = 'message-header';
+            header.textContent = role === 'user' ? 'You' : 'SAM';
+            
+            const text = document.createElement('div');
+            text.className = 'message-content';
+            text.textContent = content;
+            
+            body.appendChild(header);
+            body.appendChild(text);
+            messageEl.appendChild(avatar);
+            messageEl.appendChild(body);
+            
+            messagesContainer.appendChild(messageEl);
+            
+            if (save) {
+                messages.push({ role, content });
+                saveSession();
+            }
+            
+            scrollToBottom();
+            return messageEl;
+        }
+
+        // Send message
+        async function sendMessage() {
+            const content = messageInput.value.trim();
+            if (!content || isStreaming) return;
+
+            // Add user message
+            appendMessage('user', content);
+            messageInput.value = '';
+            updateCharCount();
+
+            // Create assistant message placeholder
+            const assistantMsg = appendMessage('assistant', '', false);
+            const contentEl = assistantMsg.querySelector('.message-content');
+            
+            isStreaming = true;
+            sendBtn.disabled = true;
+            messageInput.disabled = true;
+
+            let fullResponse = '';
+
+            try {
+                // Prepare request with settings
+                const settingsParams = Settings.getRequestParams();
+                const request = {
+                    model: currentModel,
+                    messages: messages.map(m => ({ role: m.role, content: m.content })),
+                    stream: settingsParams.stream,
+                    temperature: settingsParams.temperature,
+                    top_p: settingsParams.top_p,
+                    max_tokens: settingsParams.max_tokens
+                };
+
+                // Add optional parameters
+                if (settingsParams.systemPrompt) {
+                    request.system_prompt_id = settingsParams.systemPrompt;
+                }
+                if (settingsParams.miniPrompts) {
+                    request.mini_prompt_ids = settingsParams.miniPrompts;
+                }
+                if (settingsParams.conversation_id) {
+                    request.conversation_id = settingsParams.conversation_id;
+                }
+
+                // Start streaming
+                API.chatCompletionStreaming(
+                    request,
+                    // onChunk
+                    (chunk) => {
+                        if (chunk.choices && chunk.choices[0]?.delta?.content) {
+                            const delta = chunk.choices[0].delta.content;
+                            fullResponse += delta;
+                            contentEl.textContent = fullResponse;
+                            scrollToBottom();
+                        }
+                    },
+                    // onComplete
+                    () => {
+                        messages.push({ role: 'assistant', content: fullResponse });
+                        saveSession();
+                        isStreaming = false;
+                        sendBtn.disabled = false;
+                        messageInput.disabled = false;
+                        messageInput.focus();
+                    },
+                    // onError
+                    (error) => {
+                        Toast.error('Streaming error: ' + error.message);
+                        contentEl.textContent = '❌ Error: ' + error.message;
+                        isStreaming = false;
+                        sendBtn.disabled = false;
+                        messageInput.disabled = false;
+                    }
+                );
+
+            } catch (error) {
+                Toast.error('Failed to send message: ' + error.message);
+                assistantMsg.remove();
+                isStreaming = false;
+                sendBtn.disabled = false;
+                messageInput.disabled = false;
+            }
+        }
+
+        // Update character count
+        function updateCharCount() {
+            const length = messageInput.value.length;
+            charCount.textContent = `${length} / 32000`;
+            sendBtn.disabled = length === 0 || isStreaming;
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', () => {
+            updateCharCount();
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
+        });
+
+        // Send on Enter (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Send button click
+        sendBtn.addEventListener('click', sendMessage);
+
+        // Model selection
+        modelSelect.addEventListener('change', () => {
+            currentModel = modelSelect.value;
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('sam-api-token');
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Settings modal
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.remove('hidden');
+        });
+
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+
+        cancelSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+
+        // Close modal on backdrop click
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.classList.add('hidden');
+            }
+        });
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>

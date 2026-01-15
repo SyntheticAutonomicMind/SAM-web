@@ -1,0 +1,237 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* SPDX-FileCopyrightText: Copyright (c) 2026 Andrew Wyatt (Fewtarius) */
+
+/**
+ * Markdown Content Styles
+ * Styling for rendered markdown including images, tables, blockquotes, and Mermaid diagrams
+ */
+
+/* ============================================
+   IMAGES
+   ============================================ */
+
+.message-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+    margin: var(--space-md) 0;
+    box-shadow: var(--shadow-md);
+    display: block;
+}
+
+.message-content img[alt] {
+    cursor: help;
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+.message-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--space-md) 0;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.message-content table thead {
+    background: var(--bg-elevated);
+}
+
+.message-content table th {
+    padding: var(--space-sm) var(--space-md);
+    text-align: left;
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-heavy);
+}
+
+.message-content table td {
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.message-content table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.message-content table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+/* ============================================
+   BLOCKQUOTES
+   ============================================ */
+
+.message-content blockquote {
+    margin: var(--space-md) 0;
+    padding: var(--space-sm) var(--space-md);
+    padding-left: var(--space-lg);
+    border-left: 4px solid var(--brand-primary);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.message-content blockquote p {
+    margin: 0;
+}
+
+/* ============================================
+   HORIZONTAL RULES
+   ============================================ */
+
+.message-content hr {
+    margin: var(--space-lg) 0;
+    border: none;
+    border-top: 2px solid var(--border-color);
+}
+
+/* ============================================
+   LISTS
+   ============================================ */
+
+.message-content ul,
+.message-content ol {
+    margin: var(--space-sm) 0;
+    padding-left: var(--space-xl);
+}
+
+.message-content li {
+    margin: var(--space-xs) 0;
+    color: var(--text-primary);
+}
+
+.message-content li::marker {
+    color: var(--brand-primary);
+}
+
+/* ============================================
+   MERMAID DIAGRAMS
+   ============================================ */
+
+.mermaid-diagram {
+    margin: var(--space-md) 0;
+    padding: var(--space-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.mermaid-diagram svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.mermaid-diagram.mermaid-rendered {
+    background: transparent;
+    padding: 0;
+    min-height: auto;
+}
+
+.mermaid-error {
+    color: var(--error);
+    padding: var(--space-md);
+    background: var(--error-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--error);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+}
+
+/* ============================================
+   HEADERS
+   ============================================ */
+
+.message-content h1 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    margin: var(--space-lg) 0 var(--space-md);
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: var(--space-sm);
+}
+
+.message-content h2 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin: var(--space-md) 0 var(--space-sm);
+    color: var(--text-primary);
+}
+
+.message-content h3 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin: var(--space-md) 0 var(--space-sm);
+    color: var(--text-primary);
+}
+
+.message-content h4 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    margin: var(--space-sm) 0;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   INLINE ELEMENTS
+   ============================================ */
+
+.message-content strong {
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+}
+
+.message-content em {
+    font-style: italic;
+    color: var(--text-primary);
+}
+
+.message-content del {
+    text-decoration: line-through;
+    color: var(--text-tertiary);
+}
+
+.message-content a {
+    color: var(--brand-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.message-content a:hover {
+    color: var(--brand-secondary);
+    text-decoration: underline;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .message-content img {
+        margin: var(--space-sm) 0;
+    }
+    
+    .message-content table {
+        font-size: var(--font-size-sm);
+    }
+    
+    .message-content table th,
+    .message-content table td {
+        padding: var(--space-xs) var(--space-sm);
+    }
+    
+    .mermaid-diagram {
+        padding: var(--space-sm);
+        min-height: 150px;
+    }
+}

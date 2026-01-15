@@ -1,0 +1,75 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* SPDX-FileCopyrightText: Copyright (c) 2026 Andrew Wyatt (Fewtarius) */
+
+/**
+ * Folder Styles for SAM Web UI
+ * Styles for folder headers and grouped conversations
+ */
+
+/* Folder header */
+.folder-header {
+    padding: 8px 12px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.folder-header:hover {
+    background: var(--bg-hover);
+}
+
+.folder-header-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.folder-icon {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.folder-header.collapsed .folder-icon {
+    transform: rotate(0deg);
+}
+
+.folder-header:not(.collapsed) .folder-icon {
+    transform: rotate(90deg);
+}
+
+.folder-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.folder-count {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+/* Folder conversations container */
+.folder-conversations {
+    padding-left: 12px;
+    border-left: 1px solid var(--border-color);
+    margin-left: 18px;
+}
+
+.folder-conversations .conversation-item {
+    border-bottom: 1px solid var(--border-color, #2a2a2a);
+}
+
+/* Folder separator */
+.folder-separator {
+    height: 1px;
+    background: var(--border-color);
+    margin: 8px 0;
+}

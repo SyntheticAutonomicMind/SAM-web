@@ -51,11 +51,13 @@ venv/
 # Node
 node_modules/
 
-# Agent session handoffs (development only, not for public release)
+# CLIO AI Assistant
 ai-assisted/20*/
-
-# Scratch directory (development work, not for release)
 scratch/
+.clio/logs/
+.clio/sessions/
+.clio/memory/
+.clio/*.json
 
 # Temp directory (testing artifacts)
 temp/
@@ -70,3 +72,4 @@ temp/
 release-notes/
 
 reference/
+

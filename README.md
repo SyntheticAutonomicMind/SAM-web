@@ -228,6 +228,17 @@ Contributions welcome! Please:
 
 ---
 
+## Part of the Ecosystem
+
+SAM-Web is part of [Synthetic Autonomic Mind](https://github.com/SyntheticAutonomicMind) - a family of open source AI tools:
+
+- **[SAM](https://github.com/SyntheticAutonomicMind/SAM)** - Native macOS AI assistant. SAM-Web connects to SAM's API server.
+- **[CLIO](https://github.com/SyntheticAutonomicMind/CLIO)** - AI code assistant for the terminal. Runs on macOS and Linux.
+- **[MIRA](https://github.com/SyntheticAutonomicMind/MIRA)** - Native graphical terminal for CLIO. Runs on macOS, Linux, and Windows.
+- **[ALICE](https://github.com/SyntheticAutonomicMind/ALICE)** - GPU-accelerated image generation server with web interface and OpenAI-compatible API
+
+---
+
 ## License
 
 SAM-Web is part of SAM and licensed under the GNU General Public License v3.0.

@@ -54,11 +54,6 @@ node_modules/
 # CLIO AI Assistant
 ai-assisted/20*/
 scratch/
-.clio/logs/
-.clio/sessions/
-.clio/memory/
-.clio/*.json
-
 # Temp directory (testing artifacts)
 temp/
 
@@ -73,3 +68,6 @@ release-notes/
 
 reference/
 
+# CLIO (managed automatically)
+.clio/*
+!.clio/instructions.md

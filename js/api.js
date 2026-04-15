@@ -350,16 +350,24 @@ const API = {
     },
 
     /**
-     * Get MCP tools (debug endpoint)
+     * Get MCP tools (debug endpoint - localhost only)
      */
     async getMCPTools() {
+        if (!window.location.hostname.match(/^(localhost|127\.0\.0\.1)$/)) {
+            console.warn('Debug endpoints only available in development');
+            return Promise.reject(new Error('Debug endpoints not available in production'));
+        }
         return this.request('/debug/mcp/tools', { method: 'GET' });
     },
 
     /**
-     * Execute MCP tool (debug endpoint)
+     * Execute MCP tool (debug endpoint - localhost only)
      */
     async executeMCPTool(toolName, parameters) {
+        if (!window.location.hostname.match(/^(localhost|127\.0\.0\.1)$/)) {
+            console.warn('Debug endpoints only available in development');
+            return Promise.reject(new Error('Debug endpoints not available in production'));
+        }
         return this.request('/debug/mcp/execute', {
             method: 'POST',
             body: JSON.stringify({

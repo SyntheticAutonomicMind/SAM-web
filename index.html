@@ -1235,8 +1235,8 @@ Keyboard Shortcuts:
                 html += `
                     <div class="mini-prompt-item" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-md); display: flex; justify-content: space-between; align-items: start;">
                         <div style="flex: 1;">
-                            <h4 style="margin: 0 0 var(--space-xs) 0;">${prompt.name}</h4>
-                            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9em; white-space: pre-wrap; max-height: 100px; overflow: auto;">${prompt.content.substring(0, 200)}${prompt.content.length > 200 ? '...' : ''}</p>
+                            <h4 style="margin: 0 0 var(--space-xs) 0;">${Markdown.escapeHtml(prompt.name)}</h4>
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9em; white-space: pre-wrap; max-height: 100px; overflow: auto;">${Markdown.escapeHtml(prompt.content.substring(0, 200))}${prompt.content.length > 200 ? '...' : ''}</p>
                         </div>
                         <div style="display: flex; gap: var(--space-xs);">
                             <button class="btn btn-ghost btn-sm edit-prompt-btn" data-id="${prompt.id}" title="Edit">
@@ -1460,8 +1460,8 @@ Keyboard Shortcuts:
                 html += `
                     <div class="mini-prompt-item" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-md); display: flex; justify-content: space-between; align-items: start;">
                         <div style="flex: 1;">
-                            <h4 style="margin: 0 0 var(--space-xs) 0;">${prompt.name}</h4>
-                            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9em; white-space: pre-wrap; max-height: 100px; overflow: auto;">${prompt.content.substring(0, 200)}${prompt.content.length > 200 ? '...' : ''}</p>
+                            <h4 style="margin: 0 0 var(--space-xs) 0;">${Markdown.escapeHtml(prompt.name)}</h4>
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9em; white-space: pre-wrap; max-height: 100px; overflow: auto;">${Markdown.escapeHtml(prompt.content.substring(0, 200))}${prompt.content.length > 200 ? '...' : ''}</p>
                         </div>
                         <div style="display: flex; gap: var(--space-xs);">
                             <button class="btn btn-ghost btn-sm edit-prompt-btn" data-id="${prompt.id}" title="Edit">

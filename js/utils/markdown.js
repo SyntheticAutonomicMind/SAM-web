@@ -49,12 +49,21 @@ const Markdown = {
         // Inline code (after escaping)
         html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-        // Images (must be before links)
-        html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" loading="lazy" />');
+        // Images (must be before links) - sanitize URL scheme
+        html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, (match, alt, url) => {
+            if (/^(https?:|\/|\.)/i.test(url)) {
+                return `<img src="${url}" alt="${alt}" loading="lazy" />`;
+            }
+            return match;
+        });
 
-        // Links
-        html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-
+        // Links - sanitize URL scheme (allow http, https, mailto, relative)
+        html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, (match, text, url) => {
+            if (/^(https?:|mailto:|\/|\.)/i.test(url)) {
+                return `<a href="${url}" target="_blank" rel="noopener">${text}</a>`;
+            }
+            return text;
+        });
         // Headers (must be before horizontal rules)
         html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
         html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');

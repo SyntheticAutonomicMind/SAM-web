@@ -26,7 +26,7 @@ This project follows **The Unbroken Method** for human-AI collaboration. This is
 
 ### Collaboration Checkpoint Discipline
 
-**Use `user_collaboration` tool at EVERY key decision point:**
+**Use `interact` tool at EVERY key decision point:**
 
 | Checkpoint | When | Purpose |
 |-----------|------|---------|

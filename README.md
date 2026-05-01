@@ -234,7 +234,7 @@ SAM-Web is part of [Synthetic Autonomic Mind](https://github.com/SyntheticAutono
 
 - **[SAM](https://github.com/SyntheticAutonomicMind/SAM)** - Native macOS AI assistant. SAM-Web connects to SAM's API server.
 - **[CLIO](https://github.com/SyntheticAutonomicMind/CLIO)** - AI code assistant for the terminal. Runs on macOS and Linux.
-- **[MIRA](https://github.com/SyntheticAutonomicMind/MIRA)** - Native graphical terminal for CLIO. Runs on macOS, Linux, and Windows.
+
 - **[ALICE](https://github.com/SyntheticAutonomicMind/ALICE)** - GPU-accelerated image generation server with web interface and OpenAI-compatible API
 
 ---
